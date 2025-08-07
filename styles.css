@@ -1,0 +1,966 @@
+:root {
+  --bg-color: #f8f9fa;
+  --primary-color: #333;
+  --accent-color: #0088cc;
+  --secondary-color: #6c757d;
+  --success-color: #28a745;
+  --warning-color: #ffc107;
+  --danger-color: #dc3545;
+  --border-radius: 12px;
+  --padding: 16px;
+  --avatar-size: 48px;
+  --font-base: 16px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.1);
+  --shadow-hover: 0 4px 16px rgba(0,0,0,0.15);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: var(--bg-color);
+  color: var(--primary-color);
+  line-height: 1.5;
+  padding-bottom: 80px; /* Место для нижней навигации */
+}
+
+/* Страницы */
+.page {
+  display: none;
+  min-height: 100vh;
+}
+
+.page.active {
+  display: block;
+}
+
+/* Заголовок */
+.header {
+  background: #fff;
+  padding: var(--padding);
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
+}
+
+.header__user-card {
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: var(--border-radius);
+  padding: var(--padding);
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+.header__avatar {
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  border-radius: 50%;
+  margin-right: 16px;
+  object-fit: cover;
+  border: 3px solid rgba(255,255,255,0.3);
+}
+
+.header__info {
+  display: flex;
+  flex-direction: column;
+}
+
+.header__name {
+  font-weight: 600;
+  font-size: 18px;
+  margin-bottom: 4px;
+}
+
+.header__id {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.page-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* Основной контент */
+.main {
+  padding: 0 var(--padding);
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: var(--primary-color);
+}
+
+/* Промо-лента */
+.promotions-section {
+  margin-bottom: 24px;
+}
+
+.promotions-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.promo-card {
+  background: #fff;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.promo-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.promo-image {
+  width: 100%;
+  height: 200px;
+  object-fit: contain;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.promo-card.no-image .promo-content {
+  border-top-left-radius: var(--border-radius);
+  border-top-right-radius: var(--border-radius);
+}
+
+.promo-content {
+  padding: var(--padding);
+}
+
+.promo-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--primary-color);
+}
+
+.promo-description {
+  font-size: 14px;
+  color: var(--secondary-color);
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.promo-date {
+  font-size: 12px;
+  color: var(--secondary-color);
+  opacity: 0.7;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.promo-date-icon {
+  font-size: 14px;
+}
+
+/* История заказов */
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.order-card {
+  background: #fff;
+  border-radius: var(--border-radius);
+  padding: var(--padding);
+  box-shadow: var(--shadow);
+  border-left: 4px solid var(--accent-color);
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.order-number {
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 16px;
+}
+
+.order-status {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 8px;
+  border-radius: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.order-status.активные {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.order-status.успешные {
+  background-color: #e8f5e8;
+  color: #2e7d32;
+}
+
+.order-status.проваленные {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.order-details {
+  font-size: 14px;
+  color: var(--secondary-color);
+  margin-bottom: 8px;
+}
+
+.order-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.order-date {
+  font-size: 12px;
+  color: var(--secondary-color);
+}
+
+.order-total {
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 14px;
+}
+
+/* Календарь */
+.calendar-section {
+  background: #fff;
+  border-radius: var(--border-radius);
+  padding: var(--padding);
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.calendar-nav-btn {
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.calendar-nav-btn:hover {
+  background: #006699;
+}
+
+.calendar-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+  margin-bottom: 16px;
+}
+
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: #f8f9fa;
+  border: 1px solid transparent;
+}
+
+.calendar-day:hover:not(.other-month):not(.disabled) {
+  background: var(--accent-color);
+  color: white;
+}
+
+.calendar-day.other-month {
+  color: #ccc;
+  cursor: default;
+}
+
+.calendar-day.holiday {
+  background: #ffe6e6;
+  color: #d63384;
+  font-weight: 600;
+}
+
+.calendar-day.saved {
+  background: var(--success-color);
+  color: white;
+  font-weight: 600;
+}
+
+.calendar-day.disabled {
+  background: #f1f3f4;
+  color: #ccc;
+  cursor: not-allowed;
+}
+
+.status-info {
+  padding: 12px;
+  border-radius: var(--border-radius);
+  font-size: 14px;
+  text-align: center;
+  background: #e1bee7;
+  color: #4a148c;
+}
+
+/* Сохраненные даты */
+.saved-dates-section {
+  background: #fff;
+  border-radius: var(--border-radius);
+  padding: var(--padding);
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+}
+
+.saved-dates-section h3 {
+  margin-bottom: 16px;
+  color: var(--primary-color);
+}
+
+.dates-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.date-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid var(--success-color);
+}
+
+.date-info {
+  flex: 1;
+}
+
+.date-number {
+  font-weight: 600;
+  color: var(--primary-color);
+  margin-bottom: 4px;
+}
+
+.event-name {
+  font-size: 14px;
+  color: var(--secondary-color);
+}
+
+.remove-btn {
+  background: var(--danger-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.remove-btn:hover {
+  background: #c82333;
+}
+
+/* Кнопки */
+.save-btn {
+  width: 100%;
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow);
+}
+
+.save-btn:hover:not(:disabled) {
+  background: #006699;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-hover);
+}
+
+.save-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-primary {
+  background: var(--accent-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #006699;
+}
+
+.btn-secondary {
+  background: var(--secondary-color);
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #5a6268;
+}
+
+/* Нижняя навигация */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  justify-content: space-around;
+  align-items: stretch;
+  padding: 8px 0;
+  box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+  z-index: 1000;
+  height: 76px;
+}
+
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--secondary-color);
+  min-height: 60px;
+  flex: 1;
+  max-width: 80px;
+}
+
+.nav-btn:hover {
+  background: #f8f9fa;
+}
+
+.nav-btn.active {
+  color: var(--accent-color);
+  background: #e3f2fd;
+}
+
+.nav-icon {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.nav-text {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Модальные окна */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 2000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.9);
+  background: #fff;
+  border-radius: var(--border-radius);
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  z-index: 2001;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+  max-width: 90vw;
+  width: 400px;
+}
+
+.modal.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.modal-content h3 {
+  margin-bottom: 16px;
+  color: var(--primary-color);
+}
+
+.modal-content p {
+  margin-bottom: 16px;
+  color: var(--secondary-color);
+}
+
+.event-input {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.event-input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(0,136,204,0.1);
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+}
+
+/* Адаптивность */
+@media (max-width: 480px) {
+  :root {
+    --padding: 12px;
+  }
+  
+  .header__user-card {
+    padding: 12px;
+  }
+  
+  .header__avatar {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .header__name {
+    font-size: 16px;
+  }
+  
+  .page-title {
+    font-size: 20px;
+  }
+  
+  .section-title {
+    font-size: 18px;
+  }
+  
+  .promo-image {
+    height: 150px;
+  }
+  
+  .calendar-day {
+    font-size: 12px;
+  }
+  
+  .modal {
+    width: 95vw;
+    padding: 16px;
+  }
+  
+  .nav-text {
+    font-size: 10px;
+  }
+}
+
+/* Анимации */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.promo-card,
+.order-card,
+.date-item {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Админ-панель */
+.admin-section {
+  background: #fff;
+  border-radius: var(--border-radius);
+  padding: var(--padding);
+  box-shadow: var(--shadow);
+  margin-bottom: 24px;
+}
+
+.promo-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.form-group label {
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 14px;
+}
+
+.form-group input,
+.form-group textarea {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 16px;
+  transition: border-color 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(0,136,204,0.1);
+}
+
+.form-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.image-upload {
+  position: relative;
+}
+
+.image-upload input[type="file"] {
+  position: absolute;
+  opacity: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.upload-preview {
+  border: 2px dashed #ddd;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  transition: all 0.2s;
+  background: #f8f9fa;
+}
+
+.upload-preview:hover {
+  border-color: var(--accent-color);
+  background: #e3f2fd;
+}
+
+.upload-preview.has-image {
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.upload-preview img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.upload-text {
+  color: var(--secondary-color);
+  font-size: 14px;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 16px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.submit-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.admin-promotions-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.admin-promo-card {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 16px;
+  border-left: 4px solid var(--accent-color);
+}
+
+.admin-promo-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.admin-promo-title {
+  font-weight: 600;
+  color: var(--primary-color);
+  font-size: 16px;
+}
+
+.admin-promo-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-promo-btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.admin-promo-btn.edit {
+  background: var(--warning-color);
+  color: #856404;
+}
+
+.admin-promo-btn.delete {
+  background: var(--danger-color);
+  color: white;
+}
+
+.admin-promo-btn:hover {
+  opacity: 0.8;
+}
+
+.admin-promo-description {
+  font-size: 14px;
+  color: var(--secondary-color);
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.admin-promo-date {
+  font-size: 12px;
+  color: var(--secondary-color);
+  opacity: 0.7;
+}
+
+.admin-promo-image {
+  width: 100%;
+  height: 150px;
+  object-fit: contain;
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  margin-bottom: 12px;
+}
+
+.admin-promo-card.no-image .admin-promo-header {
+  border-top-left-radius: var(--border-radius);
+  border-top-right-radius: var(--border-radius);
+}
+
+/* Состояния загрузки и ошибок */
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--secondary-color);
+}
+
+.loading::after {
+  content: '';
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 2px solid #f3f3f3;
+  border-top: 2px solid var(--accent-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-left: 8px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--secondary-color);
+}
+
+.empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+  opacity: 0.5;
+}
+
+.empty-text {
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.empty-text strong {
+  color: var(--primary-color);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.error-message {
+  text-align: center;
+  padding: 40px 20px;
+  background: #fff3cd;
+  border-radius: var(--border-radius);
+  border: 1px solid #ffeaa7;
+  margin: 20px 0;
+}
+
+.error-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.error-text {
+  font-size: 16px;
+  line-height: 1.5;
+  margin-bottom: 20px;
+  color: #856404;
+}
+
+.error-text strong {
+  color: #856404;
+  display: block;
+  margin-bottom: 4px;
+}
+
+.retry-btn {
+  background: var(--accent-color);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.retry-btn:hover {
+  background: #006699;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Заглушка для акций */
+.coming-soon {
+  text-align: center;
+  padding: 60px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: var(--border-radius);
+  color: white;
+  box-shadow: var(--shadow);
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.coming-soon-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  animation: bounce 2s infinite;
+}
+
+.coming-soon h3 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  color: white;
+}
+
+.coming-soon p {
+  font-size: 16px;
+  opacity: 0.9;
+  line-height: 1.6;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
