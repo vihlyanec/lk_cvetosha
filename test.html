@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест приложения</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <h1>Тест приложения</h1>
+        <p>Проверяем загрузку...</p>
+        <div id="debug-info"></div>
+    </div>
+    
+    <script>
+        // Простой тест
+        document.addEventListener('DOMContentLoaded', function() {
+            const debugInfo = document.getElementById('debug-info');
+            debugInfo.innerHTML = `
+                <p>Telegram WebApp: ${window.Telegram ? 'Доступен' : 'Недоступен'}</p>
+                <p>URL параметры: ${window.location.search}</p>
+                <p>Скрипт main.js загружен: ${typeof window.initApp === 'function' ? 'Да' : 'Нет'}</p>
+            `;
+        });
+    </script>
+    <script src="main.js"></script>
+</body>
+</html> 
