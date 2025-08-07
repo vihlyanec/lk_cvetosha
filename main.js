@@ -122,7 +122,7 @@ async function getClientVariables(clientId) {
         }
 
         const response = await fetch(`https://chatter.salebot.pro/api/${API_KEY}/get_variables?client_id=${clientId}`, {
-            method: 'GET',
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
         });
 
