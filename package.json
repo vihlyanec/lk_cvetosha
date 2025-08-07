@@ -1,0 +1,28 @@
+{
+  "name": "cvetosha-happy-date",
+  "version": "1.0.0",
+  "description": "Telegram Mini App для цветочного магазина с памятными датами",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "serve": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [
+    "telegram",
+    "bot",
+    "mini-app",
+    "flowers",
+    "shop"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {},
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "http-server": "^14.1.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+} 

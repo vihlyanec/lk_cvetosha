@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Цветочный магазин</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="main.js"></script>
+</head>
+<body>
+  <!-- Главная страница -->
+  <div id="main-page" class="page active">
+    <header class="header">
+      <div class="header__user-card">
+        <img src="" alt="Аватар" class="header__avatar" id="user-avatar" loading="lazy" />
+        <div class="header__info">
+          <div class="header__name" id="user-name">Загрузка...</div>
+          <div class="header__id" id="user-id"></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="promotions-section">
+        <h2 class="section-title">Акции и предложения</h2>
+        <div id="promotions-feed" class="promotions-feed">
+          <div class="coming-soon">
+            <div class="coming-soon-icon">🎉</div>
+            <h3>Скоро здесь будут акции!</h3>
+            <p>Мы готовим для вас специальные предложения и скидки на цветы. Следите за обновлениями!</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Страница истории заказов -->
+  <div id="orders-page" class="page">
+    <header class="header">
+      <h1 class="page-title">История заказов</h1>
+    </header>
+    
+    <main class="main">
+      <div id="orders-list" class="orders-list">
+        <!-- Заказы будут загружаться здесь -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Страница памятных дат -->
+  <div id="dates-page" class="page">
+    <header class="header">
+      <h1 class="page-title">Памятные даты</h1>
+    </header>
+    
+    <main class="main">
+      <div class="calendar-section">
+        <div class="calendar-header">
+          <button id="prevMonth" class="calendar-nav-btn">&lt;</button>
+          <h2 id="currentMonth" class="calendar-title">Январь 2025</h2>
+          <button id="nextMonth" class="calendar-nav-btn">&gt;</button>
+        </div>
+        
+        <div id="calendarDays" class="calendar-grid">
+          <!-- Календарь будет рендериться здесь -->
+        </div>
+        
+        <div id="statusInfo" class="status-info">
+          Выберите до 3 памятных дат, чтобы получать цветочные напоминания 🌸
+        </div>
+      </div>
+      
+      <div id="savedDatesSection" class="saved-dates-section" style="display: none;">
+        <h3>Ваши памятные даты:</h3>
+        <div id="datesList" class="dates-list">
+          <!-- Сохраненные даты будут здесь -->
+        </div>
+      </div>
+      
+      <button id="saveBtn" class="save-btn" disabled>
+        <span class="btn-text">Сохранить даты</span>
+      </button>
+    </main>
+  </div>
+
+  <!-- Страница админа -->
+  <div id="admin-page" class="page">
+    <header class="header">
+      <h1 class="page-title">Панель администратора</h1>
+    </header>
+    
+    <main class="main">
+      <div class="admin-section">
+        <h2 class="section-title">Создать новую акцию</h2>
+        
+        <form id="promoForm" class="promo-form">
+          <div class="form-group">
+            <label for="promoTitle">Название акции *</label>
+            <input type="text" id="promoTitle" name="title" required placeholder="Например: Скидка 20% на все розы">
+          </div>
+          
+          <div class="form-group">
+            <label for="promoDescription">Описание акции *</label>
+            <textarea id="promoDescription" name="description" required placeholder="Подробное описание акции и условий"></textarea>
+          </div>
+          
+          <div class="form-group">
+            <label for="promoImage">Изображение акции (необязательно)</label>
+            <div class="image-upload">
+              <input type="file" id="promoImage" name="image" accept="image/*">
+              <div class="upload-preview" id="imagePreview">
+                <span class="upload-text">Выберите изображение (необязательно)</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="form-group">
+            <label for="promoEndDate">Дата окончания акции *</label>
+            <input type="date" id="promoEndDate" name="endDate" required>
+          </div>
+          
+          <button type="submit" class="btn btn-primary submit-btn">
+            <span class="btn-text">Опубликовать акцию</span>
+          </button>
+        </form>
+      </div>
+      
+      <div class="admin-section">
+        <h2 class="section-title">Управление акциями</h2>
+        <div id="adminPromotionsList" class="admin-promotions-list">
+          <!-- Список акций для управления -->
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Нижняя навигация -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" data-page="main-page">
+      <span class="nav-icon">🏠</span>
+      <span class="nav-text">Главная</span>
+    </button>
+    <button class="nav-btn" data-page="orders-page">
+      <span class="nav-icon">📋</span>
+      <span class="nav-text">История заказов</span>
+    </button>
+    <button class="nav-btn" data-page="dates-page">
+      <span class="nav-icon">📅</span>
+      <span class="nav-text">Памятные даты</span>
+    </button>
+    <button class="nav-btn admin-only" data-page="admin-page" style="display: none;">
+      <span class="nav-icon">⚙️</span>
+      <span class="nav-text">Админ</span>
+    </button>
+  </nav>
+
+  <!-- Модальные окна -->
+  <div id="modalOverlay" class="modal-overlay"></div>
+  
+  <!-- Модальное окно для добавления события -->
+  <div id="eventModal" class="modal">
+    <div class="modal-content">
+      <h3>Добавить памятную дату</h3>
+      <p>Выбранная дата: <span id="selectedDateText"></span></p>
+      <input type="text" id="eventName" placeholder="Название события" class="event-input" />
+      <div class="modal-buttons">
+        <button id="cancelEvent" class="btn btn-secondary">Отмена</button>
+        <button id="addEvent" class="btn btn-primary">Добавить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модальное окно уведомлений -->
+  <div id="notificationModal" class="modal">
+    <div class="modal-content">
+      <h3>Уведомление</h3>
+      <p id="notificationText"></p>
+      <div class="modal-buttons">
+        <button id="okNotification" class="btn btn-primary">OK</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
