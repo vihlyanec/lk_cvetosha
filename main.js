@@ -121,10 +121,9 @@ async function getClientVariables(clientId) {
             throw new Error('API ключ Salebot не найден в URL параметрах');
         }
 
-        const response = await fetch(`https://chatter.salebot.pro/api/${API_KEY}/get_variables`, {
-            method: 'POST',
+        const response = await fetch(`https://chatter.salebot.pro/api/${API_KEY}/get_variables?client_id=${clientId}`, {
+            method: 'GET',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ client_id: clientId })
         });
 
         if (!response.ok) {
