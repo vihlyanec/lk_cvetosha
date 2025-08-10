@@ -116,28 +116,10 @@ async function saveClientVariables(clientId, variables) {
 }
 
 async function getClientVariables(clientId) {
-    try {
-        if (!API_KEY) {
-            throw new Error('API ключ Salebot не найден в URL параметрах');
-        }
-
-        const response = await fetch(`/api/salebot/${API_KEY}/get_variables?client_id=${clientId}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' },
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Ошибка получения переменных: ${response.status} ${response.statusText}\n${errorText}`);
-        }
-
-        return await response.json();
-    } catch (error) {
-        console.error('Ошибка получения переменных клиента:', error);
-        throw error;
+    fetch(
+        `https://chatter.salebot.pro/api/${API_KEY}/get_variables?client_id=${clientId}`
+      ).then((body) => body.json());
     }
-}
-
 // --- Планирование колбэка ---
 async function scheduleCallback(clientId, message, sendTime) {
     try {
