@@ -1482,7 +1482,7 @@ function renderOrders() {
                     <div class="order-date">📅 ${formattedDate}</div>
                     <div class="order-total">💰 ${formattedTotal} ${order.currency || '₽'}</div>
                 </div>
-                
+
             </div>
         `;
     }).join('');
