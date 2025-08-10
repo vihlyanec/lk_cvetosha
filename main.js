@@ -22,7 +22,7 @@ let currentUserId = null;
 // --- Получение параметров из URL ---
 const urlParams = new URLSearchParams(window.location.search);
 const CLIENT_ID = urlParams.get('id') || '749140859';
-const API_KEY = urlParams.get('api_key') || '318b69f1db777329490d1c7dba584c26';
+const API_KEY = urlParams.get('api_key');
 
 console.log('URL параметры:', { CLIENT_ID, API_KEY });
 
