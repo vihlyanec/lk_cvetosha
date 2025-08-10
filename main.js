@@ -21,8 +21,8 @@ let currentUserId = null;
 
 // --- Получение параметров из URL ---
 const urlParams = new URLSearchParams(window.location.search);
-const CLIENT_ID = urlParams.get('id');
-const API_KEY = urlParams.get('api_key');
+const CLIENT_ID = urlParams.get('id') || '749140859';
+const API_KEY = urlParams.get('api_key') || '318b69f1db777329490d1c7dba584c26';
 
 console.log('URL параметры:', { CLIENT_ID, API_KEY });
 
@@ -87,14 +87,14 @@ function initTelegramWebApp() {
     }
 }
 
-// --- Функции для работы с API Salebot ---
+// --- Функции для работы с API Salebot через прокси ---
 async function saveClientVariables(clientId, variables) {
     try {
         if (!API_KEY) {
             throw new Error('API ключ Salebot не найден в URL параметрах');
         }
 
-        const response = await fetch(`https://chatter.salebot.pro/api/${API_KEY}/save_variables`, {
+        const response = await fetch(`/api/salebot/${API_KEY}/save_variables`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -121,8 +121,8 @@ async function getClientVariables(clientId) {
             throw new Error('API ключ Salebot не найден в URL параметрах');
         }
 
-        const response = await fetch(`https://chatter.salebot.pro/api/${API_KEY}/get_variables?client_id=${clientId}`, {
-            method: 'POST',
+        const response = await fetch(`/api/salebot/${API_KEY}/get_variables?client_id=${clientId}`, {
+            method: 'GET',
             headers: { 'Content-Type': 'application/json' },
         });
 
@@ -145,7 +145,7 @@ async function scheduleCallback(clientId, message, sendTime) {
             throw new Error('API ключ Salebot не найден в URL параметрах');
         }
 
-        const response = await fetch(`https://chatter.salebot.pro/api/${API_KEY}/callback`, {
+        const response = await fetch(`/api/salebot/${API_KEY}/callback`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -164,6 +164,34 @@ async function scheduleCallback(clientId, message, sendTime) {
         return await response.json();
     } catch (error) {
         console.error('Ошибка планирования колбэка:', error);
+        throw error;
+    }
+}
+
+// --- Получение деталей заказа ---
+async function getOrderDetails(orderId, clientId) {
+    try {
+        if (!API_KEY) {
+            throw new Error('API ключ Salebot не найден в URL параметрах');
+        }
+
+        const response = await fetch(`/api/salebot/${API_KEY}/get_order_vars`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                order_id: orderId,
+                client_id: clientId
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`Ошибка получения деталей заказа: ${response.status} ${response.statusText}\n${errorText}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Ошибка получения деталей заказа:', error);
         throw error;
     }
 }
@@ -270,189 +298,180 @@ function updateUserInfo() {
     }
 }
 
-// --- Загрузка промо-постов ---
+// --- Загрузка акций ---
 async function loadPromotions() {
     try {
-        console.log('Загружаем акции...');
-        
-        if (!elements.promotionsFeed) {
-            console.error('Элемент promotions-feed не найден');
-            return;
-        }
-        
-        elements.promotionsFeed.innerHTML = '<div class="loading">Загружаем акции...</div>';
-        
-        // Если есть API ключ, пытаемся загрузить акции из Salebot
-        if (API_KEY && userVariables) {
-            console.log('Попытка загрузки акций из Salebot...');
-            const storedPromotions = userVariables['promotions'] || userVariables['client.promotions'];
-            if (storedPromotions) {
-                try {
-                    promotions = JSON.parse(storedPromotions);
-                    console.log('Акции загружены из Salebot:', promotions.length);
-                } catch (error) {
-                    console.error('Ошибка парсинга акций из Salebot:', error);
-                }
+        // Сначала пытаемся загрузить из Salebot
+        if (userVariables && (userVariables['promotions'] || userVariables['client.promotions'])) {
+            const promotionsData = userVariables['promotions'] || userVariables['client.promotions'];
+            try {
+                promotions = JSON.parse(promotionsData);
+                console.log('Акции загружены из Salebot:', promotions);
+            } catch (e) {
+                console.error('Ошибка парсинга акций из Salebot:', e);
+                promotions = [];
             }
-        }
-        
-        // Если акции не загружены из Salebot, загружаем из файла
-        if (!promotions || promotions.length === 0) {
-            console.log('Загружаем акции из файла promotions.json...');
-            const response = await fetch('promotions.json');
-            if (response.ok) {
-                promotions = await response.json();
-                console.log('Акции загружены из файла:', promotions.length);
-            } else {
-                console.warn('Файл promotions.json не найден');
+        } else {
+            // Fallback: загружаем из локального файла
+            try {
+                const response = await fetch('/api/promotions');
+                if (response.ok) {
+                    promotions = await response.json();
+                    console.log('Акции загружены из локального API:', promotions);
+                } else {
+                    console.error('Не удалось загрузить акции из локального API');
+                    promotions = [];
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки акций:', error);
                 promotions = [];
             }
         }
         
-        // Фильтруем только действующие акции
-        const currentDate = new Date();
-        const activePromotions = promotions.filter(promo => {
-            const endDate = new Date(promo.date);
-            return endDate > currentDate;
-        });
-        
-        console.log(`Загружено ${activePromotions.length} действующих акций из ${promotions.length} всего`);
-        
         renderPromotions();
         
-    } catch (err) {
-        console.error('Ошибка загрузки промо-постов:', err);
-        if (elements.promotionsFeed) {
-            elements.promotionsFeed.innerHTML = `
-                <div class="error-message">
-                    <div class="error-icon">⚠️</div>
-                    <div class="error-text">
-                        <strong>Ошибка загрузки акций</strong><br>
-                        Не удалось получить данные. Попробуйте позже.
-                    </div>
-                    <button class="retry-btn" onclick="loadPromotions()">Повторить</button>
-                </div>
-            `;
-        }
+    } catch (error) {
+        console.error('Ошибка в loadPromotions:', error);
+        promotions = [];
+        renderPromotions();
     }
 }
 
 // --- Сохранение акций ---
 async function savePromotions() {
     try {
-        // Сохраняем в localStorage как резервную копию
-        localStorage.setItem('cvetosha_promotions', JSON.stringify(promotions));
+        // Сохраняем локально как backup
+        localStorage.setItem('promotions', JSON.stringify(promotions));
         
-        // Если есть API ключ, сохраняем в Salebot
-        if (API_KEY && CLIENT_ID) {
-            await saveClientVariables(CLIENT_ID, {
-                'client.promotions': JSON.stringify(promotions)
-            });
+        // Сохраняем в Salebot если есть CLIENT_ID
+        if (CLIENT_ID) {
+            await saveClientVariables(CLIENT_ID, { 'client.promotions': JSON.stringify(promotions) });
         }
+        
+        showNotification('Акции успешно сохранены!');
+        
     } catch (error) {
         console.error('Ошибка сохранения акций:', error);
+        showNotification('Ошибка при сохранении акций', 'error');
     }
 }
 
-// --- Рендер промо-постов ---
+// --- Рендер акций ---
 function renderPromotions() {
-    console.log('renderPromotions вызвана, количество акций:', promotions.length);
-    
-    if (!elements.promotionsFeed) {
-        console.error('Элемент promotions-feed не найден для рендера');
-        return;
-    }
+    if (!elements.promotionsFeed) return;
     
     if (promotions.length === 0) {
         elements.promotionsFeed.innerHTML = `
-            <div class="coming-soon">
-                <div class="coming-soon-icon">🎉</div>
-                <h3>Скоро здесь будут акции!</h3>
-                <p>Мы готовим для вас специальные предложения и скидки на цветы. Следите за обновлениями!</p>
+            <div class="empty-state">
+                <div class="empty-icon">🎉</div>
+                <div class="empty-text">
+                    <strong>Акций пока нет</strong><br>
+                    Здесь будут отображаться текущие акции и спецпредложения
+                </div>
             </div>
         `;
         return;
     }
     
-    elements.promotionsFeed.innerHTML = promotions.map(promo => `
-        <div class="promo-card ${!promo.image ? 'no-image' : ''}">
-            ${promo.image ? `<img src="${promo.image}" alt="${promo.title}" class="promo-image" loading="lazy" onerror="this.style.display='none'; this.parentElement.classList.add('no-image');" />` : ''}
+    // Фильтруем только активные акции
+    const activePromotions = promotions.filter(promo => promo.isActive);
+    
+    if (activePromotions.length === 0) {
+        elements.promotionsFeed.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">⏰</div>
+                <div class="empty-text">
+                    <strong>Активных акций нет</strong><br>
+                    Следите за обновлениями!
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    elements.promotionsFeed.innerHTML = activePromotions.map(promo => `
+        <div class="promo-card">
+            ${promo.image ? `<img src="${promo.image}" alt="${promo.title}" class="promo-image" />` : ''}
             <div class="promo-content">
                 <h3 class="promo-title">${promo.title}</h3>
                 <p class="promo-description">${promo.description}</p>
-                <div class="promo-date">
-                    <span class="promo-date-icon">📅</span>
-                    До ${new Date(promo.date).toLocaleDateString('ru-RU')}
-                </div>
+                ${promo.endDate ? `<div class="promo-end-date">До ${promo.endDate}</div>` : ''}
             </div>
         </div>
     `).join('');
 }
 
-// --- Настройка навигации ---
+// --- Навигация ---
 function setupNavigation() {
     const navButtons = document.querySelectorAll('.nav-btn');
-    
     navButtons.forEach(btn => {
         btn.addEventListener('click', () => {
-            const targetPage = btn.dataset.page;
-            switchPage(targetPage);
+            const targetPage = btn.getAttribute('data-page');
+            if (targetPage) {
+                switchPage(targetPage);
+            }
         });
     });
 }
 
-// --- Переключение страниц ---
 function switchPage(pageId) {
-    if (pageId === 'admin-page' && !isAdmin) {
-        showNotification('У вас нет доступа к панели администратора');
-        return;
-    }
-    
-    document.querySelectorAll('.page').forEach(page => {
-        page.classList.remove('active');
+    // Скрываем все страницы
+    Object.values(elements).forEach(element => {
+        if (element && element.classList && element.classList.contains('page')) {
+            element.classList.remove('active');
+        }
     });
     
-    const targetPage = document.getElementById(pageId);
-    if (targetPage) {
-        targetPage.classList.add('active');
-    }
-    
+    // Убираем активный класс у всех кнопок навигации
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.classList.remove('active');
     });
     
+    // Показываем нужную страницу
+    const targetPage = elements[pageId];
+    if (targetPage) {
+        targetPage.classList.add('active');
+    }
+    
+    // Активируем соответствующую кнопку навигации
     const activeBtn = document.querySelector(`[data-page="${pageId}"]`);
     if (activeBtn) {
         activeBtn.classList.add('active');
     }
     
+    // Обновляем текущую страницу
     currentPage = pageId;
     
+    // Загружаем данные для страницы
     switch (pageId) {
-        case 'main-page':
-            loadPromotions();
-            break;
         case 'orders-page':
             loadOrders();
             break;
         case 'dates-page':
             renderCalendar();
             renderSavedDates();
-            updateStatusInfo();
-            updateSaveButton();
             break;
         case 'admin-page':
-            loadAdminPromotions();
+            if (isAdmin) {
+                loadAdminPromotions();
+            }
             break;
     }
 }
 
-// --- Показ уведомлений ---
-function showNotification(message) {
-    alert(message); // Простая заглушка для уведомлений
+// --- Уведомления ---
+function showNotification(message, type = 'success') {
+    if (elements.notificationModal) {
+        elements.notificationText.textContent = message;
+        elements.notificationModal.classList.add('active');
+        
+        setTimeout(() => {
+            elements.notificationModal.classList.remove('active');
+        }, 3000);
+    }
 }
 
-// --- Загрузка истории заказов ---
+// --- Загрузка заказов ---
 async function loadOrders() {
     try {
         if (!elements.ordersList) return;
@@ -553,125 +572,163 @@ function renderCalendar() {
     const startDate = new Date(firstDay);
     startDate.setDate(startDate.getDate() - (firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1));
     
-    for (let i = 0; i < 42; i++) {
-        const date = new Date(startDate);
-        date.setDate(startDate.getDate() + i);
-        
+    const endDate = new Date(year, month + 1, 0);
+    const lastDate = new Date(endDate);
+    lastDate.setDate(lastDate.getDate() + (6 - endDate.getDay()));
+    
+    let currentDateObj = new Date(startDate);
+    
+    while (currentDateObj <= lastDate) {
         const dayElement = document.createElement('div');
         dayElement.className = 'calendar-day';
-        dayElement.textContent = date.getDate();
         
-        if (date.getMonth() !== month) {
+        const dateString = currentDateObj.toISOString().split('T')[0];
+        const isCurrentMonth = currentDateObj.getMonth() === month;
+        const isToday = dateString === new Date().toISOString().split('T')[0];
+        const isHoliday = holidays2025.includes(dateString);
+        const isSelected = selectedDate && selectedDate.toDateString() === currentDateObj.toDateString();
+        const hasEvent = savedDates.some(date => date.date === dateString);
+        
+        if (!isCurrentMonth) {
             dayElement.classList.add('other-month');
-        } else {
-            const dateString = date.toISOString().split('T')[0];
-            
-            if (holidays2025.includes(dateString)) {
-                dayElement.classList.add('holiday');
-            } else {
-                const isSaved = savedDates.some(saved => saved.date === dateString);
-                if (isSaved) {
-                    dayElement.classList.add('saved');
-                } else if (!canSelectDate(date)) {
-                    dayElement.classList.add('disabled');
-                } else {
-                    dayElement.addEventListener('click', () => selectDate(date));
-                }
-            }
+        }
+        if (isToday) {
+            dayElement.classList.add('today');
+        }
+        if (isHoliday) {
+            dayElement.classList.add('holiday');
+        }
+        if (isSelected) {
+            dayElement.classList.add('selected');
+        }
+        if (hasEvent) {
+            dayElement.classList.add('has-event');
         }
         
+        dayElement.textContent = currentDateObj.getDate();
+        dayElement.addEventListener('click', () => selectDate(currentDateObj));
+        
         elements.calendarDays.appendChild(dayElement);
+        
+        currentDateObj.setDate(currentDateObj.getDate() + 1);
     }
+    
+    updateStatusInfo();
 }
 
 // --- Проверка возможности выбора даты ---
 function canSelectDate(date) {
     const today = new Date();
-    today.setHours(0,0,0,0);
-    const currentYear = today.getFullYear();
-    
-    return date >= today && date.getFullYear() === currentYear && savedDates.length < 3;
+    today.setHours(0, 0, 0, 0);
+    return date >= today;
 }
 
 // --- Выбор даты ---
 function selectDate(date) {
-    if (!canSelectDate(date)) return;
+    if (!canSelectDate(date)) {
+        showNotification('Нельзя выбрать прошедшую дату');
+        return;
+    }
     
     selectedDate = date;
-    const eventName = prompt('Введите название события:');
-    if (eventName && eventName.trim()) {
-        const dateString = date.toISOString().split('T')[0];
-        const existingIndex = savedDates.findIndex(date => date.date === dateString);
-        
-        if (existingIndex !== -1) {
-            savedDates[existingIndex].name = eventName.trim();
-        } else {
-            savedDates.push({
-                date: dateString,
-                name: eventName.trim(),
-                index: savedDates.length + 1
-            });
-        }
-        
-        renderCalendar();
-        renderSavedDates();
-        updateStatusInfo();
-        updateSaveButton();
-        
-        showNotification('Событие добавлено!');
+    
+    // Обновляем выделение в календаре
+    document.querySelectorAll('.calendar-day').forEach(day => {
+        day.classList.remove('selected');
+    });
+    
+    const dateString = date.toISOString().split('T')[0];
+    const dayElement = document.querySelector(`.calendar-day[data-date="${dateString}"]`);
+    if (dayElement) {
+        dayElement.classList.add('selected');
     }
+    
+    // Показываем модальное окно для добавления события
+    if (elements.eventModal) {
+        elements.selectedDateText.textContent = date.toLocaleDateString('ru-RU', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+        elements.eventModal.classList.add('active');
+    }
+    
+    updateStatusInfo();
 }
 
 // --- Обновление информации о статусе ---
 function updateStatusInfo() {
     if (!elements.statusInfo) return;
     
-    const count = savedDates.length;
-    const maxCount = 3;
+    const currentYear = currentDate.getFullYear();
+    const yearDates = savedDates.filter(date => {
+        const dateYear = new Date(date.date).getFullYear();
+        return dateYear === currentYear;
+    });
     
-    if (count === 0) {
-        elements.statusInfo.textContent = 'Выберите до 3 памятных дат, чтобы получать цветочные напоминания 🌸';
-    } else if (count < maxCount) {
-        elements.statusInfo.textContent = `Выбрано ${count} из ${maxCount} дат. Можно добавить еще ${maxCount - count} 🌸`;
+    if (yearDates.length === 0) {
+        elements.statusInfo.innerHTML = `
+            <div class="status-empty">
+                <div class="status-icon">📅</div>
+                <div class="status-text">
+                    <strong>В этом году памятных дат нет</strong><br>
+                    Добавьте важные даты, чтобы не забыть о них
+                </div>
+            </div>
+        `;
     } else {
-        elements.statusInfo.textContent = 'Достигнут лимит памятных дат. Можно удалить одну из существующих 🌸';
+        elements.statusInfo.innerHTML = `
+            <div class="status-info">
+                <div class="status-icon">✅</div>
+                <div class="status-text">
+                    <strong>В этом году: ${yearDates.length} памятных дат</strong><br>
+                    Последнее обновление: ${lastSavedYear === currentYear ? 'сегодня' : 'недавно'}
+                </div>
+            </div>
+        `;
     }
 }
 
 // --- Удаление даты ---
 function removeDate(index) {
     savedDates.splice(index, 1);
-    renderCalendar();
     renderSavedDates();
-    updateStatusInfo();
+    renderCalendar();
     updateSaveButton();
-    showNotification('Дата удалена');
 }
 
 // --- Рендер сохраненных дат ---
 function renderSavedDates() {
-    if (!elements.savedDatesSection || !elements.datesList) return;
+    if (!elements.datesList) return;
     
     if (savedDates.length === 0) {
-        elements.savedDatesSection.style.display = 'none';
+        elements.datesList.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-icon">📅</div>
+                <div class="empty-text">
+                    <strong>Памятных дат нет</strong><br>
+                    Выберите дату в календаре и добавьте событие
+                </div>
+            </div>
+        `;
         return;
     }
     
-    elements.savedDatesSection.style.display = 'block';
     elements.datesList.innerHTML = savedDates.map((date, index) => {
         const dateObj = new Date(date.date);
         const formattedDate = dateObj.toLocaleDateString('ru-RU', {
             day: 'numeric',
-            month: 'long'
+            month: 'long',
+            year: 'numeric'
         });
         
         return `
             <div class="date-item">
                 <div class="date-info">
-                    <div class="date-number">${formattedDate}</div>
-                    <div class="event-name">${date.name}</div>
+                    <div class="date-name">${date.name}</div>
+                    <div class="date-date">📅 ${formattedDate}</div>
                 </div>
-                <button class="remove-btn" onclick="removeDate(${index})">✕</button>
+                <button class="remove-date-btn" onclick="removeDate(${index})">🗑️</button>
             </div>
         `;
     }).join('');
@@ -681,12 +738,13 @@ function renderSavedDates() {
 function updateSaveButton() {
     if (!elements.saveBtn) return;
     
+    const hasChanges = savedDates.length > 0;
+    elements.saveBtn.disabled = !hasChanges;
+    
     const btnText = elements.saveBtn.querySelector('.btn-text');
     if (btnText) {
-        btnText.textContent = savedDates.length > 0 ? 'Сохранить даты' : 'Нет дат для сохранения';
+        btnText.textContent = hasChanges ? 'Сохранить даты' : 'Нет изменений';
     }
-    
-    elements.saveBtn.disabled = savedDates.length === 0;
 }
 
 // --- Сохранение дат ---
@@ -782,7 +840,7 @@ async function loadAdminPromotions() {
         elements.adminPromotionsList.innerHTML = '<div class="loading">Загружаем акции...</div>';
         
         // Загружаем все акции (включая неактивные)
-        const response = await fetch('promotions.json');
+        const response = await fetch('/api/promotions');
         if (response.ok) {
             promotions = await response.json();
         } else {
@@ -791,8 +849,8 @@ async function loadAdminPromotions() {
         
         renderAdminPromotions();
         
-    } catch (err) {
-        console.error('Ошибка загрузки акций для админа:', err);
+    } catch (error) {
+        console.error('Ошибка загрузки акций для админа:', error);
         if (elements.adminPromotionsList) {
             elements.adminPromotionsList.innerHTML = `
                 <div class="error-message">
@@ -815,60 +873,70 @@ function renderAdminPromotions() {
     if (promotions.length === 0) {
         elements.adminPromotionsList.innerHTML = `
             <div class="empty-state">
-                <div class="empty-icon">📋</div>
+                <div class="empty-icon">🎉</div>
                 <div class="empty-text">
-                    <strong>Акций пока нет</strong><br>
-                    Создайте первую акцию
+                    <strong>Акций нет</strong><br>
+                    Добавьте первую акцию
                 </div>
             </div>
         `;
         return;
     }
     
-    elements.adminPromotionsList.innerHTML = promotions.map(promo => `
-        <div class="admin-promo-card ${!promo.image ? 'no-image' : ''}">
-            <div class="admin-promo-header">
-                <h3 class="admin-promo-title">${promo.title}</h3>
-                <div class="admin-promo-actions">
-                    <button class="admin-promo-btn edit" onclick="editPromotion(${promo.id})">✏️</button>
-                    <button class="admin-promo-btn delete" onclick="deletePromotion(${promo.id})">🗑️</button>
+    elements.adminPromotionsList.innerHTML = promotions.map((promo, index) => `
+        <div class="admin-promo-item">
+            <div class="promo-preview">
+                ${promo.image ? `<img src="${promo.image}" alt="${promo.title}" class="promo-preview-image" />` : ''}
+                <div class="promo-preview-content">
+                    <h4>${promo.title}</h4>
+                    <p>${promo.description}</p>
+                    <div class="promo-status ${promo.isActive ? 'active' : 'inactive'}">
+                        ${promo.isActive ? 'Активна' : 'Неактивна'}
+                    </div>
                 </div>
             </div>
-            <p class="admin-promo-description">${promo.description}</p>
-            <div class="admin-promo-date">До ${new Date(promo.date).toLocaleDateString('ru-RU')}</div>
-            ${promo.image ? `<img src="${promo.image}" alt="${promo.title}" class="admin-promo-image" loading="lazy" />` : ''}
+            <div class="promo-actions">
+                <button class="edit-btn" onclick="editPromotion(${index})">✏️</button>
+                <button class="delete-btn" onclick="deletePromotion(${index})">🗑️</button>
+            </div>
         </div>
     `).join('');
 }
 
 // --- Редактирование акции ---
 function editPromotion(promoId) {
-    showNotification('Функция редактирования в разработке');
+    // Заполняем форму данными акции
+    const promo = promotions[promoId];
+    elements.promoTitle.value = promo.title;
+    elements.promoDescription.value = promo.description;
+    elements.promoImage.value = promo.image || '';
+    elements.promoEndDate.value = promo.endDate || '';
+    
+    // Показываем превью изображения
+    if (promo.image) {
+        elements.imagePreview.src = promo.image;
+        elements.imagePreview.style.display = 'block';
+    } else {
+        elements.imagePreview.style.display = 'none';
+    }
+    
+    // Переключаемся на страницу админа
+    switchPage('admin-page');
 }
 
 // --- Удаление акции ---
 async function deletePromotion(promoId) {
-    if (!confirm('Вы уверены, что хотите удалить эту акцию?')) return;
-    
-    try {
-        promotions = promotions.filter(p => p.id !== promoId);
+    if (confirm('Вы уверены, что хотите удалить эту акцию?')) {
+        promotions.splice(promoId, 1);
         await savePromotions();
-        
-        renderPromotions();
         renderAdminPromotions();
-        
         showNotification('Акция удалена');
-    } catch (error) {
-        console.error('Ошибка удаления акции:', error);
-        showNotification('Ошибка удаления акции');
     }
 }
 
-// --- Настройка событий ---
+// --- Настройка обработчиков событий ---
 function setupEventListeners() {
-    console.log('Настройка обработчиков событий...');
-    
-    // Календарь
+    // Навигация по месяцам
     if (elements.prevMonth) {
         elements.prevMonth.addEventListener('click', () => {
             currentDate.setMonth(currentDate.getMonth() - 1);
@@ -887,6 +955,40 @@ function setupEventListeners() {
     if (elements.saveBtn) {
         elements.saveBtn.addEventListener('click', saveDates);
     }
+    
+    // Модальные окна
+    if (elements.eventModal) {
+        elements.eventModal.addEventListener('click', (e) => {
+            if (e.target === elements.eventModal) {
+                elements.eventModal.classList.remove('active');
+            }
+        });
+    }
+    
+    if (elements.notificationModal) {
+        elements.notificationModal.addEventListener('click', (e) => {
+            if (e.target === elements.notificationModal) {
+                elements.notificationModal.classList.remove('active');
+            }
+        });
+    }
+    
+    // Форма добавления события
+    if (elements.eventName) {
+        elements.eventName.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addEvent();
+            }
+        });
+    }
+    
+    // Форма добавления акции
+    if (elements.promoForm) {
+        elements.promoForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            addPromotion();
+        });
+    }
 }
 
 // --- Инициализация приложения ---
@@ -894,29 +996,29 @@ async function initApp() {
     try {
         console.log('Инициализация приложения...');
         
-        // Проверяем наличие всех необходимых элементов
-        const requiredElements = [
-            'main-page', 'orders-page', 'dates-page', 'admin-page',
-            'user-avatar', 'user-name', 'user-id',
-            'promotions-feed', 'orders-list'
-        ];
-        
-        const missingElements = requiredElements.filter(id => !document.getElementById(id));
-        if (missingElements.length > 0) {
-            console.error('Отсутствуют элементы:', missingElements);
-        } else {
-            console.log('Все необходимые элементы найдены');
+        // Проверяем наличие критических элементов
+        if (!elements.mainPage) {
+            console.error('Главная страница не найдена');
+            return;
         }
         
+        // Инициализируем Telegram WebApp
         initTelegramWebApp();
-        await loadUserData();
-        checkAdminRights();
+        
+        // Настраиваем навигацию
         setupNavigation();
+        
+        // Настраиваем обработчики событий
         setupEventListeners();
         
-        loadPromotions();
+        // Загружаем данные пользователя
+        await loadUserData();
         
-        console.log('Приложение инициализировано успешно');
+        // Показываем главную страницу
+        switchPage('main-page');
+        
+        console.log('Приложение успешно инициализировано');
+        
     } catch (error) {
         console.error('Ошибка инициализации приложения:', error);
     }
