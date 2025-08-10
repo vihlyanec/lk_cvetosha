@@ -900,7 +900,12 @@ async function loadUserData() {
             if (avatarUrl && typeof avatarUrl === 'string') {
                 // Убираем лишние пробелы и проверяем, что это URL
                 avatarUrl = avatarUrl.trim();
-                if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
+                
+                // Проверяем на null, "null", "None" и пустую строку
+                if (avatarUrl === 'null' || avatarUrl === 'None' || avatarUrl === '' || avatarUrl === null) {
+                    console.log('Аватар имеет значение null, "None" или пустой');
+                    clientAvatar = '';
+                } else if (avatarUrl.startsWith('http://') || avatarUrl.startsWith('https://')) {
                     clientAvatar = avatarUrl;
                     console.log('Аватар найден (URL):', clientAvatar);
                 } else {
@@ -1011,7 +1016,7 @@ async function loadUserData() {
         });
         
         // Дополнительная проверка аватара
-        if (clientAvatar) {
+        if (clientAvatar && clientAvatar !== 'null' && clientAvatar !== 'None' && clientAvatar !== null) {
             console.log('✅ Аватар готов к отображению:', clientAvatar);
             console.log('Тип аватара:', typeof clientAvatar);
             console.log('Длина URL аватара:', clientAvatar.length);
@@ -1026,7 +1031,7 @@ async function loadUserData() {
                 console.error('❌ URL аватара невалидный:', e.message);
             }
         } else {
-            console.log('⚠️ Аватар не найден, будет использован placeholder');
+            console.log('⚠️ Аватар не найден или равен null/None, будет использована иконка пользователя');
             console.log('Проверяем все переменные Salebot на наличие аватара...');
             
             // Ищем аватар во всех переменных
@@ -1147,10 +1152,18 @@ function updateUserInfo() {
     console.log('Обновление информации о пользователе:', { clientFullName, clientAvatar, CLIENT_ID });
     
     if (elements.userAvatar) {
-        const avatarSrc = clientAvatar || 'https://via.placeholder.com/40x40/cccccc/666666?text=👤';
+        // Проверяем аватар на null, "null", "None" или пустую строку
+        const isValidAvatar = clientAvatar && 
+                             clientAvatar !== null && 
+                             clientAvatar !== 'null' && 
+                             clientAvatar !== 'None' &&
+                             clientAvatar !== '' && 
+                             clientAvatar !== undefined;
+        
+        const avatarSrc = isValidAvatar ? clientAvatar : 'https://cdn-icons-png.flaticon.com/512/56/56745.png';
         elements.userAvatar.src = avatarSrc;
         elements.userAvatar.alt = clientFullName || 'Пользователь';
-        console.log('Аватар обновлен:', avatarSrc);
+        console.log('Аватар обновлен:', avatarSrc, 'isValidAvatar:', isValidAvatar);
         
         // Добавляем обработчики для аватара
         elements.userAvatar.onload = function() {
@@ -1159,8 +1172,8 @@ function updateUserInfo() {
         
         elements.userAvatar.onerror = function() {
             console.warn('❌ Ошибка загрузки аватара:', avatarSrc);
-            // При ошибке загрузки используем placeholder
-            this.src = 'https://via.placeholder.com/40x40/cccccc/666666?text=👤';
+            // При ошибке загрузки используем иконку пользователя
+            this.src = 'https://cdn-icons-png.flaticon.com/512/56/56745.png';
             this.alt = 'Ошибка загрузки аватара';
         };
     }
@@ -1917,7 +1930,7 @@ window.debugAvatar = function() {
         console.log('Текущий alt:', avatarElement.alt);
         
         // Пробуем установить тестовый аватар
-        const testAvatar = 'https://via.placeholder.com/48x48/ff6b6b/ffffff?text=TEST';
+        const testAvatar = 'https://cdn-icons-png.flaticon.com/512/56/56745.png';
         avatarElement.src = testAvatar;
         console.log('Установлен тестовый аватар:', testAvatar);
     } else {
