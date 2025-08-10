@@ -720,7 +720,7 @@ function getStatusName(status) {
         1: 'Успешный', 
         2: 'Отмененный'
     };
-    return statusNames[status] || 'Неизвестный';
+    return statusNames[status] || 'Активная сделка';
 }
 
 // --- Вспомогательная функция для CSS классов статусов ---
@@ -730,7 +730,7 @@ function getStatusClass(status) {
         1: 'success', 
         2: 'failed'
     };
-    return statusClasses[status] || 'unknown';
+    return statusClasses[status] || 'active';
 }
 
 // --- Вспомогательная функция для иконок статусов ---
@@ -740,7 +740,7 @@ function getStatusIcon(status) {
         1: '✅', 
         2: '❌'
     };
-    return statusIcons[status] || '❓';
+    return statusIcons[status] || '🔄';
 }
 
 // --- Функция просмотра деталей заказа ---
